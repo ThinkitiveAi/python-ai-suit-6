@@ -1,6 +1,7 @@
+import { useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Container, Title, Text, Button, Stack, Paper, Group, Box } from '@mantine/core'
-import { IconLogout, IconHeart, IconUser } from '@tabler/icons-react'
+import { IconLogout, IconHeart } from '@tabler/icons-react'
 
 export const Route = createFileRoute('/patient-dashboard')({
   component: PatientDashboard,
@@ -9,7 +10,27 @@ export const Route = createFileRoute('/patient-dashboard')({
 function PatientDashboard() {
   const navigate = useNavigate()
 
+  // Authentication check
+  useEffect(() => {
+    const patientToken = localStorage.getItem('patientToken')
+    if (!patientToken) {
+      navigate({ to: '/patient-login' })
+      return
+    }
+
+    // Check if token is valid (in a real app, you'd verify with backend)
+    // For demo purposes, we'll just check if it exists
+    const patientUser = localStorage.getItem('patientUser')
+    if (!patientUser) {
+      localStorage.removeItem('patientToken')
+      navigate({ to: '/patient-login' })
+    }
+  }, [navigate])
+
   const handleLogout = () => {
+    // Clear patient authentication
+    localStorage.removeItem('patientToken')
+    localStorage.removeItem('patientUser')
     navigate({ to: '/patient-login' })
   }
 
@@ -35,7 +56,7 @@ function PatientDashboard() {
           </Group>
 
           <Text size="lg" c="dimmed">
-            Welcome to your personal health dashboard! Here you can view your medical records, 
+            Welcome to your personal health dashboard! Here you can view your medical records,
             appointments, and health information.
           </Text>
 
@@ -51,16 +72,6 @@ function PatientDashboard() {
               <Text size="sm" c="#0369a1">• Communication with your healthcare providers</Text>
             </Stack>
           </Box>
-
-          <Group justify="center" mt="md">
-            <Button
-              variant="subtle"
-              leftSection={<IconUser size={16} />}
-              onClick={() => navigate({ to: '/login' })}
-            >
-              Switch to Provider Login
-            </Button>
-          </Group>
         </Stack>
       </Paper>
     </Container>

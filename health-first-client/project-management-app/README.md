@@ -1,6 +1,6 @@
-# Healthcare Patient & Provider Login Interface
+# Healthcare Patient & Provider Management System
 
-A comprehensive healthcare application interface built with React, Mantine UI, and TanStack Router that provides welcoming login experiences for both patients and healthcare providers.
+A comprehensive healthcare application interface built with React, Mantine UI, and TanStack Router that provides welcoming login experiences for both patients and healthcare providers, along with advanced availability management for providers.
 
 ## Features
 
@@ -26,11 +26,19 @@ A comprehensive healthcare application interface built with React, Mantine UI, a
 - **Forgot Password**: Link for password recovery
 - **Register as Provider**: Link to comprehensive registration form
 
-### Registration Interface
+### Provider Registration Interface
 - **Personal Information**: Full name, email, phone, profile photo upload
 - **Professional Information**: Medical license, specialization, experience, qualifications
 - **Practice Information**: Practice name, type, complete address
 - **Account Security**: Password with strength indicator, confirm password, terms acceptance
+
+### Provider Availability Management Interface
+- **Multi-View Calendar**: Month, week, and day views for comprehensive scheduling
+- **Time Slot Management**: Add, edit, delete, and bulk manage availability slots
+- **Visual Status System**: Color-coded slots (available, booked, blocked, tentative, break)
+- **Advanced Scheduling**: Recurring schedules, appointment types, duration settings
+- **Bulk Operations**: Select and modify multiple slots simultaneously
+- **Real-time Statistics**: Utilization metrics and availability overview
 
 ### Design Requirements
 - **Visual Design**: Professional medical theme with calming blues (#3b82f6) and soft greens (#10b981)
@@ -59,6 +67,8 @@ A comprehensive healthcare application interface built with React, Mantine UI, a
 - **Password Strength**: Visual indicator for password requirements
 - **Terms & Conditions**: Modal with full terms
 - **Form Sections**: Organized into logical groups with dividers
+- **Calendar Interactions**: Click to add, drag to select, hover effects
+- **Time Management**: Time pickers, duration controls, recurring patterns
 
 ### Validation Rules
 - Email format validation
@@ -138,7 +148,8 @@ src/
 │   ├── patient-dashboard.tsx   # Patient dashboard page
 │   ├── login.tsx               # Provider login page
 │   ├── register.tsx            # Provider registration page
-│   └── dashboard.tsx           # Provider dashboard page
+│   ├── dashboard.tsx           # Provider dashboard page
+│   └── provider-availability.tsx # Provider availability management
 ├── main.tsx                    # Application entry point
 ├── routeTree.gen.ts            # Generated route tree
 └── index.css                   # Global styles
@@ -210,6 +221,45 @@ src/
 - **Smart Validation**: Real-time feedback with helpful messages
 - **Accessibility**: Large touch targets, high contrast, keyboard navigation
 - **Mobile-First**: Optimized for smartphone completion
+
+## Provider Availability Management Features
+
+### Calendar Views
+- **Month View**: Full month display with availability overview and statistics
+- **Week View**: Detailed week grid with time slots and appointment information
+- **Day View**: Hour-by-hour breakdown for precise scheduling
+
+### Time Slot Management
+- **Add Availability**: Simple interface for creating new time slots
+- **Edit Slots**: Modify existing appointments and availability
+- **Delete Slots**: Remove time slots with confirmation
+- **Bulk Operations**: Select and modify multiple slots simultaneously
+
+### Visual Status System
+- **Available Slots**: Green (#10b981) for open appointment times
+- **Booked Appointments**: Blue (#3b82f6) for scheduled appointments
+- **Blocked Time**: Red (#ef4444) for unavailable periods
+- **Tentative/Pending**: Yellow (#f59e0b) for provisional bookings
+- **Break Times**: Gray (#6b7280) for scheduled breaks
+
+### Advanced Features
+- **Appointment Types**: Consultation, follow-up, emergency, procedure, screening
+- **Duration Settings**: 15, 30, 45, 60, 90, 120 minute options
+- **Recurring Schedules**: Weekly recurring availability patterns
+- **Notes & Comments**: Optional notes for specific time slots
+- **Conflict Detection**: Automatic highlighting of scheduling conflicts
+
+### Quick Actions
+- **Copy Week Schedule**: Duplicate availability to other weeks
+- **Export Schedule**: Generate printable schedules or export data
+- **Sync Calendar**: Integration with external calendar applications
+- **Bulk Edit Mode**: Toggle for selecting multiple slots
+
+### Statistics & Analytics
+- **Weekly Overview**: Available, booked, blocked slots count
+- **Utilization Rate**: Percentage of time slots utilized
+- **Day Statistics**: Per-day breakdown of appointment status
+- **Real-time Updates**: Live statistics as availability changes
 
 ## Provider Registration Form Details
 
@@ -287,6 +337,7 @@ Available practice types include:
 1. **Provider Login** (`/login`)
 2. **Registration** → Provider Registration (`/register`)
 3. **Login** → Provider Dashboard (`/dashboard`)
+4. **Availability** → Provider Availability Management (`/provider-availability`)
 
 ## Future Enhancements
 
@@ -307,6 +358,14 @@ Available practice types include:
 - [ ] Telemedicine integration
 - [ ] Prescription management
 - [ ] Lab results viewing
+- [ ] Patient appointment booking interface
+- [ ] Real-time notifications
+- [ ] Calendar sync with external providers
+- [ ] Advanced reporting and analytics
+- [ ] Multi-provider practice management
+- [ ] Insurance integration
+- [ ] Payment processing
+- [ ] Electronic health records (EHR) integration
 
 ## Contributing
 

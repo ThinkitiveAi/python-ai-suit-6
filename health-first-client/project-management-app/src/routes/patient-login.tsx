@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from '@mantine/form'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { notifications } from '@mantine/notifications'
@@ -40,7 +40,7 @@ export const Route = createFileRoute('/patient-login')({
 })
 
 interface PatientLoginForm {
-  emailOrPhone: string
+  identifier: string
   password: string
   rememberMe: boolean
 }
@@ -50,14 +50,22 @@ function PatientLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
+  // Check if user is already authenticated
+  useEffect(() => {
+    const patientToken = localStorage.getItem('patientToken')
+    if (patientToken) {
+      navigate({ to: '/patient-dashboard' })
+    }
+  }, [navigate])
+
   const form = useForm<PatientLoginForm>({
     initialValues: {
-      emailOrPhone: '',
+      identifier: '',
       password: '',
       rememberMe: false,
     },
     validate: {
-      emailOrPhone: (value) => {
+      identifier: (value) => {
         if (!value) return 'Please enter your email or phone number'
         
         // Check if it's an email
@@ -83,35 +91,35 @@ function PatientLogin() {
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Simulate successful login
-      if (values.emailOrPhone === 'patient@healthcare.com' && values.password === 'patient123') {
+      // For demo purposes, accept any valid identifier and password
+      if (values.identifier && values.password) {
+        // Store authentication tokens
+        localStorage.setItem('patientToken', 'demo-patient-token-' + Date.now())
+        localStorage.setItem('patientUser', JSON.stringify({
+          identifier: values.identifier,
+          name: 'John Smith',
+          role: 'patient'
+        }))
+        
         notifications.show({
-          title: 'Welcome Back! 👋',
-          message: 'Successfully logged in. Taking you to your health dashboard...',
+          title: 'Login Successful',
+          message: 'Welcome to your health dashboard!',
           color: 'green',
           icon: <IconCheck size={16} />,
         })
         
-        // Redirect to patient dashboard after a brief delay
-        setTimeout(() => {
-          navigate({ to: '/patient-dashboard' })
-        }, 1000)
+        navigate({ to: '/patient-dashboard' })
       } else {
-        notifications.show({
-          title: 'Login Unsuccessful',
-          message: 'Please check your email/phone and password. Need help? Contact support.',
-          color: 'red',
-          icon: <IconX size={16} />,
-        })
+        throw new Error('Invalid credentials')
       }
     } catch (error) {
       notifications.show({
-        title: 'Connection Issue',
-        message: 'Unable to connect. Please check your internet and try again.',
-        color: 'orange',
-        icon: <IconInfoCircle size={16} />,
+        title: 'Login Failed',
+        message: 'Invalid login identifier or password. Please try again.',
+        color: 'red',
+        icon: <IconX size={16} />,
       })
     } finally {
       setLoading(false)
@@ -198,7 +206,7 @@ function PatientLogin() {
               leftSection={<IconUser size={18} />}
               required
               size="lg"
-              {...form.getInputProps('emailOrPhone')}
+              {...form.getInputProps('identifier')}
               styles={{
                 input: {
                   borderColor: '#e2e8f0',

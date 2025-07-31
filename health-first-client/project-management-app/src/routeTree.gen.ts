@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ProviderAvailabilityRouteImport } from './routes/provider-availability'
 import { Route as PatientRegisterRouteImport } from './routes/patient-register'
 import { Route as PatientLoginRouteImport } from './routes/patient-login'
 import { Route as PatientDashboardRouteImport } from './routes/patient-dashboard'
@@ -20,6 +21,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProviderAvailabilityRoute = ProviderAvailabilityRouteImport.update({
+  id: '/provider-availability',
+  path: '/provider-availability',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatientRegisterRoute = PatientRegisterRouteImport.update({
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/patient-dashboard': typeof PatientDashboardRoute
   '/patient-login': typeof PatientLoginRoute
   '/patient-register': typeof PatientRegisterRoute
+  '/provider-availability': typeof ProviderAvailabilityRoute
   '/register': typeof RegisterRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/patient-dashboard': typeof PatientDashboardRoute
   '/patient-login': typeof PatientLoginRoute
   '/patient-register': typeof PatientRegisterRoute
+  '/provider-availability': typeof ProviderAvailabilityRoute
   '/register': typeof RegisterRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/patient-dashboard': typeof PatientDashboardRoute
   '/patient-login': typeof PatientLoginRoute
   '/patient-register': typeof PatientRegisterRoute
+  '/provider-availability': typeof ProviderAvailabilityRoute
   '/register': typeof RegisterRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/patient-dashboard'
     | '/patient-login'
     | '/patient-register'
+    | '/provider-availability'
     | '/register'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/patient-dashboard'
     | '/patient-login'
     | '/patient-register'
+    | '/provider-availability'
     | '/register'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/patient-dashboard'
     | '/patient-login'
     | '/patient-register'
+    | '/provider-availability'
     | '/register'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   PatientDashboardRoute: typeof PatientDashboardRoute
   PatientLoginRoute: typeof PatientLoginRoute
   PatientRegisterRoute: typeof PatientRegisterRoute
+  ProviderAvailabilityRoute: typeof ProviderAvailabilityRoute
   RegisterRoute: typeof RegisterRoute
 }
 
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provider-availability': {
+      id: '/provider-availability'
+      path: '/provider-availability'
+      fullPath: '/provider-availability'
+      preLoaderRoute: typeof ProviderAvailabilityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/patient-register': {
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   PatientDashboardRoute: PatientDashboardRoute,
   PatientLoginRoute: PatientLoginRoute,
   PatientRegisterRoute: PatientRegisterRoute,
+  ProviderAvailabilityRoute: ProviderAvailabilityRoute,
   RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport

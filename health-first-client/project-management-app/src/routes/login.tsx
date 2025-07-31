@@ -1,32 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from '@mantine/form'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { notifications } from '@mantine/notifications'
 import {
-  Container,
-  Paper,
-  Title,
-  Text,
-  TextInput,
-  PasswordInput,
-  Checkbox,
-  Button,
-  Group,
-  Stack,
-  Divider,
-  Box,
-  Center,
-  Flex,
-  rem,
+  Container, Paper, Title, Text, TextInput, PasswordInput, Checkbox, Button, Group, Stack, Divider, Box, Center, Flex, rem, Alert,
 } from '@mantine/core'
 import {
-  IconUser,
-  IconLock,
-  IconEye,
-  IconEyeOff,
-  IconStethoscope,
-  IconMail,
-  IconPhone,
+  IconUser, IconLock, IconEye, IconEyeOff, IconHeart, IconMail, IconPhone, IconInfoCircle, IconShield, IconArrowRight, IconCheck, IconX, IconStethoscope,
 } from '@tabler/icons-react'
 
 export const Route = createFileRoute('/login')({
@@ -43,6 +23,14 @@ function Login() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const providerToken = localStorage.getItem('providerToken')
+    if (providerToken) {
+      navigate({ to: '/dashboard' })
+    }
+  }, [navigate])
 
   const form = useForm<LoginForm>({
     initialValues: {
@@ -77,32 +65,35 @@ function Login() {
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await new Promise(resolve => setTimeout(resolve, 1000))
       
-      // Simulate successful login
-      if (values.emailOrPhone === 'demo@healthcare.com' && values.password === 'password123') {
+      // For demo purposes, accept any valid email/phone and password
+      if (values.emailOrPhone && values.password) {
+        // Store authentication tokens
+        localStorage.setItem('providerToken', 'demo-provider-token-' + Date.now())
+        localStorage.setItem('providerUser', JSON.stringify({
+          email: values.emailOrPhone,
+          name: 'Dr. John Doe',
+          role: 'provider'
+        }))
+        
         notifications.show({
           title: 'Login Successful',
           message: 'Welcome back! Redirecting to dashboard...',
           color: 'green',
+          icon: <IconCheck size={16} />,
         })
         
-        // Redirect to dashboard after a brief delay
-        setTimeout(() => {
-          navigate({ to: '/dashboard' })
-        }, 1000)
+        navigate({ to: '/dashboard' })
       } else {
-        notifications.show({
-          title: 'Login Failed',
-          message: 'Invalid email/phone or password. Please try again.',
-          color: 'red',
-        })
+        throw new Error('Invalid credentials')
       }
     } catch (error) {
       notifications.show({
-        title: 'Error',
-        message: 'An error occurred during login. Please try again.',
+        title: 'Login Failed',
+        message: 'Invalid email/phone or password. Please try again.',
         color: 'red',
+        icon: <IconX size={16} />,
       })
     } finally {
       setLoading(false)
