@@ -19,6 +19,8 @@ import {
   Flex,
   rem,
   Alert,
+  Badge,
+  ActionIcon,
 } from '@mantine/core'
 import {
   IconUser,
@@ -33,7 +35,14 @@ import {
   IconArrowRight,
   IconCheck,
   IconX,
+  IconStethoscope,
+  IconArrowLeft,
+  IconUsers,
+  IconUserCircle,
+  IconSparkles,
 } from '@tabler/icons-react'
+import { api } from '../services/api'
+import type { PatientLoginRequest } from '../services/api'
 
 export const Route = createFileRoute('/patient-login')({
   component: PatientLogin,
@@ -90,34 +99,41 @@ function PatientLogin() {
     setLoading(true)
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // For demo purposes, accept any valid identifier and password
-      if (values.identifier && values.password) {
-        // Store authentication tokens
-        localStorage.setItem('patientToken', 'demo-patient-token-' + Date.now())
+      const loginData: PatientLoginRequest = {
+        email: values.identifier,
+        password: values.password,
+      }
+
+      const response = await api.patient.login(loginData)
+
+      if (response.success && response.data) {
+        // Store authentication tokens and user data
+        const { access_token, refresh_token, patient } = response.data
+        
+        localStorage.setItem('patientToken', access_token)
+        localStorage.setItem('patientRefreshToken', refresh_token)
         localStorage.setItem('patientUser', JSON.stringify({
-          identifier: values.identifier,
-          name: 'John Smith',
-          role: 'patient'
+          email: patient.email,
+          name: `${patient.first_name} ${patient.last_name}`,
+          role: 'patient',
+          ...patient
         }))
         
         notifications.show({
           title: 'Login Successful',
-          message: 'Welcome to your health dashboard!',
+          message: `Welcome back, ${patient.first_name}! Redirecting to your health dashboard...`,
           color: 'green',
           icon: <IconCheck size={16} />,
         })
         
         navigate({ to: '/patient-dashboard' })
       } else {
-        throw new Error('Invalid credentials')
+        throw new Error(response.error || 'Login failed')
       }
     } catch (error) {
       notifications.show({
         title: 'Login Failed',
-        message: 'Invalid login identifier or password. Please try again.',
+        message: error instanceof Error ? error.message : 'Invalid login identifier or password. Please try again.',
         color: 'red',
         icon: <IconX size={16} />,
       })
@@ -145,6 +161,68 @@ function PatientLogin() {
 
   return (
     <Container size="xs" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+      {/* Enhanced Portal Switcher */}
+      <Box
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          zIndex: 1000,
+        }}
+      >
+        <Button
+          variant="light"
+          size="sm"
+          leftSection={<IconStethoscope size={16} />}
+          rightSection={<IconArrowRight size={14} />}
+          onClick={handleProviderLogin}
+          style={{
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+            color: 'white',
+            borderRadius: '20px',
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+            border: 'none',
+            fontWeight: 500,
+            '&:hover': {
+              transform: 'translateY(-1px)',
+              boxShadow: '0 6px 16px rgba(59, 130, 246, 0.4)',
+            },
+          }}
+        >
+          Switch to Provider Portal
+        </Button>
+      </Box>
+
+      {/* Floating Portal Indicator */}
+      <Box
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          zIndex: 1000,
+        }}
+      >
+        <Badge
+          size="lg"
+          variant="filled"
+          style={{
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            borderRadius: '12px',
+            padding: '8px 16px',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+            border: '2px solid rgba(255, 255, 255, 0.2)',
+          }}
+        >
+          <Group gap="xs">
+            <IconHeart size={16} />
+            <Text size="sm" fw={600} c="white">
+              Patient Portal
+            </Text>
+            <IconSparkles size={14} style={{ opacity: 0.8 }} />
+          </Group>
+        </Badge>
+      </Box>
+
       <Paper
         shadow="sm"
         p="xl"
@@ -180,6 +258,19 @@ function PatientLogin() {
             <Text c="dimmed" size="lg" ta="center" style={{ fontWeight: 400 }}>
               Access your health information safely and securely
             </Text>
+            <Badge 
+              color="green" 
+              variant="light" 
+              size="sm"
+              style={{ 
+                marginTop: rem(8),
+                background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                border: '1px solid #bbf7d0',
+              }}
+            >
+              <IconHeart size={12} style={{ marginRight: '4px' }} />
+              Patient Health Portal
+            </Badge>
           </Stack>
         </Center>
 
@@ -367,22 +458,6 @@ function PatientLogin() {
             }}
           >
             Create Patient Account
-          </Button>
-          
-          <Button
-            variant="subtle"
-            size="sm"
-            onClick={handleProviderLogin}
-            styles={{
-              root: {
-                color: '#6b7280',
-                '&:hover': {
-                  backgroundColor: '#f9fafb',
-                },
-              },
-            }}
-          >
-            I'm a Healthcare Provider
           </Button>
         </Stack>
 

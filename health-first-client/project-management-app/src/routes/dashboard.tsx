@@ -7,6 +7,7 @@ import {
 import {
   IconLogout, IconHeart, IconUser, IconSearch, IconBell, IconMessageCircle, IconDotsVertical, IconPlus, IconEye, IconEdit, IconTrash, IconPhone, IconMail, IconCalendar, IconDashboard, IconUsers, IconFileText, IconSettings, IconClock, IconChevronLeft, IconChevronRight, IconCalendarTime, IconStethoscope, IconCheck, IconX, IconAlertTriangle, IconInfoCircle, IconDownload, IconUpload, IconRefresh, IconFilter, IconCalendarEvent, IconCalendarStats,
 } from '@tabler/icons-react'
+import { api } from '../services/api'
 
 export const Route = createFileRoute('/dashboard')({
   component: Dashboard,
@@ -93,6 +94,8 @@ function Dashboard() {
   const [bulkEditMode, setBulkEditMode] = useState(false)
   const [selectedSlots, setSelectedSlots] = useState<string[]>([])
   const [templates, setTemplates] = useState<AvailabilityTemplate[]>([])
+  const [userName, setUserName] = useState('Dr. John Doe')
+  const [userInitials, setUserInitials] = useState('JD')
   const navigate = useNavigate()
 
   // Authentication check
@@ -109,14 +112,47 @@ function Dashboard() {
     if (!providerUser) {
       localStorage.removeItem('providerToken')
       navigate({ to: '/login' })
+    } else {
+      // Set user name from stored data
+      try {
+        const user = JSON.parse(providerUser)
+        if (user.name) {
+          setUserName(user.name)
+          // Generate initials from name
+          const initials = user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+          setUserInitials(initials)
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+      }
     }
   }, [navigate])
 
-  const handleLogout = () => {
-    // Clear provider authentication
-    localStorage.removeItem('providerToken')
-    localStorage.removeItem('providerUser')
-    navigate({ to: '/login' })
+  const handleLogout = async () => {
+    try {
+      const refreshToken = localStorage.getItem('providerRefreshToken')
+      
+      if (refreshToken) {
+        // Call the logout API
+        await api.provider.logout(refreshToken)
+      }
+    } catch (error) {
+      // Even if logout API fails, we should still clear local storage
+      console.error('Logout API error:', error)
+    } finally {
+      // Clear provider authentication
+      localStorage.removeItem('providerToken')
+      localStorage.removeItem('providerRefreshToken')
+      localStorage.removeItem('providerUser')
+      
+      notifications.show({
+        title: 'Logged Out',
+        message: 'You have been successfully logged out.',
+        color: 'blue',
+      })
+      
+      navigate({ to: '/login' })
+    }
   }
 
   const filteredPatients = mockPatients.filter(patient =>
@@ -1383,7 +1419,7 @@ function Dashboard() {
                     color="blue"
                     style={{ border: '1px solid white' }}
                   >
-                    JD
+                    {userInitials}
                   </Avatar>
                   <Menu shadow="md" width={200} position="bottom-end">
                     <Menu.Target>
@@ -1398,7 +1434,7 @@ function Dashboard() {
                         }}
                       >
                         <Text size="sm" c="white" style={{ fontWeight: 500 }}>
-                          Dr. John Doe
+                          {userName}
                         </Text>
                       </Button>
                     </Menu.Target>

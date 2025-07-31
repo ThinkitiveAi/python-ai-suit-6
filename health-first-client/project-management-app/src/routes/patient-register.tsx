@@ -8,6 +8,8 @@ import {
 import {
   IconUser, IconMail, IconPhone, IconLock, IconEye, IconEyeOff, IconUserPlus, IconUpload, IconMapPin, IconCalendar, IconShield, IconArrowLeft, IconArrowRight, IconCheck, IconX,
 } from '@tabler/icons-react'
+import { api } from '../services/api'
+import type { PatientCreateRequest } from '../services/api'
 
 export const Route = createFileRoute('/patient-register')({
   component: PatientRegister,
@@ -174,19 +176,55 @@ function PatientRegister() {
 
   const handleSubmit = async (values: PatientRegistrationForm) => {
     setLoading(true)
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      notifications.show({
-        title: 'Welcome to Our Healthcare Family! 🎉',
-        message: 'Your account has been created successfully. Please check your email for verification.',
-        color: 'green',
-        icon: <IconCheck size={16} />,
-      })
-      setTimeout(() => navigate({ to: '/patient-login' }), 2000)
+      // Prepare the data according to API schema
+      const registrationData: PatientCreateRequest = {
+        first_name: values.firstName,
+        last_name: values.lastName,
+        email: values.email,
+        phone_number: values.phone,
+        date_of_birth: values.dateOfBirth,
+        gender: values.gender as 'male' | 'female' | 'other' | 'prefer_not_to_say',
+        address: {
+          street: values.streetAddress,
+          city: values.city,
+          state: values.state,
+          zip: values.zipCode,
+        },
+        emergency_contact: values.emergencyContactName ? {
+          name: values.emergencyContactName,
+          phone: values.emergencyPhone,
+          relationship: values.emergencyRelationship,
+        } : null,
+        medical_history: null, // TODO: Add medical history field to form
+        insurance_info: null, // TODO: Add insurance info field to form
+        password: values.password,
+        confirm_password: values.confirmPassword,
+      }
+
+      const response = await api.patient.register(registrationData)
+
+      if (response.success) {
+        notifications.show({
+          title: 'Welcome to Our Healthcare Family! 🎉',
+          message: 'Your account has been created successfully. Please check your email for verification.',
+          color: 'green',
+          icon: <IconCheck size={16} />,
+        })
+        
+        // Redirect to login after a brief delay
+        setTimeout(() => {
+          navigate({ to: '/patient-login' })
+        }, 2000)
+      } else {
+        throw new Error(response.error || 'Registration failed')
+      }
+      
     } catch (error) {
       notifications.show({
         title: 'Registration Unsuccessful',
-        message: 'We encountered an issue. Please try again or contact support.',
+        message: error instanceof Error ? error.message : 'We encountered an issue. Please try again or contact support.',
         color: 'red',
         icon: <IconX size={16} />,
       })

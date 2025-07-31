@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Container, Title, Text, Button, Stack, Paper, Group, Box } from '@mantine/core'
-import { IconLogout, IconHeart } from '@tabler/icons-react'
+import { IconLogout, IconHeart, IconUser } from '@tabler/icons-react'
+import { api } from '../services/api'
 
 export const Route = createFileRoute('/patient-dashboard')({
   component: PatientDashboard,
@@ -27,11 +28,21 @@ function PatientDashboard() {
     }
   }, [navigate])
 
-  const handleLogout = () => {
-    // Clear patient authentication
-    localStorage.removeItem('patientToken')
-    localStorage.removeItem('patientUser')
-    navigate({ to: '/patient-login' })
+  const handleLogout = async () => {
+    try {
+      // Call the logout API
+      await api.patient.logout()
+    } catch (error) {
+      // Even if logout API fails, we should still clear local storage
+      console.error('Logout API error:', error)
+    } finally {
+      // Clear patient authentication
+      localStorage.removeItem('patientToken')
+      localStorage.removeItem('patientRefreshToken')
+      localStorage.removeItem('patientUser')
+      
+      navigate({ to: '/patient-login' })
+    }
   }
 
   return (

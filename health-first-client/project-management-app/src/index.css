@@ -59,7 +59,7 @@ body {
 button:focus {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
-}
+  }
 
 /* Input focus styles */
 input:focus,

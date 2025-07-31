@@ -43,6 +43,8 @@ import {
   IconCheck,
   IconX,
 } from '@tabler/icons-react'
+import { api } from '../services/api'
+import type { ProviderCreateRequest } from '../services/api'
 
 export const Route = createFileRoute('/register')({
   component: Register,
@@ -266,25 +268,48 @@ function Register() {
     setLoading(true)
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      notifications.show({
-        title: 'Registration Successful!',
-        message: 'Your account has been created. Please check your email for verification instructions.',
-        color: 'green',
-        icon: <IconCheck size={16} />,
-      })
-      
-      // Redirect to login after a brief delay
-      setTimeout(() => {
-        navigate({ to: '/login' })
-      }, 2000)
+      // Prepare the data according to API schema
+      const registrationData: ProviderCreateRequest = {
+        first_name: values.firstName,
+        last_name: values.lastName,
+        email: values.email,
+        phone_number: values.phone,
+        specialization: values.specialization,
+        license_number: values.licenseNumber,
+        years_of_experience: values.yearsExperience as number,
+        clinic_address: {
+          street: values.streetAddress,
+          city: values.city,
+          state: values.state,
+          zip: values.zipCode,
+        },
+        license_document_url: "https://example.com/license.pdf", // TODO: Implement file upload
+        password: values.password,
+        confirm_password: values.confirmPassword,
+      }
+
+      const response = await api.provider.register(registrationData)
+
+      if (response.success) {
+        notifications.show({
+          title: 'Registration Successful!',
+          message: 'Your account has been created successfully. You can now log in.',
+          color: 'green',
+          icon: <IconCheck size={16} />,
+        })
+        
+        // Redirect to login after a brief delay
+        setTimeout(() => {
+          navigate({ to: '/login' })
+        }, 2000)
+      } else {
+        throw new Error(response.error || 'Registration failed')
+      }
       
     } catch (error) {
       notifications.show({
         title: 'Registration Failed',
-        message: 'An error occurred during registration. Please try again.',
+        message: error instanceof Error ? error.message : 'An error occurred during registration. Please try again.',
         color: 'red',
         icon: <IconX size={16} />,
       })
