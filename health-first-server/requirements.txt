@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+pydantic
+sqlalchemy
+odmantic
+motor
+bcrypt
+python-dotenv
+email-validator
+slowapi
+pytest
+pytest-asyncio
+httpx
+python-multipart 
+PyJWT
+pytz
+python-dateutil
