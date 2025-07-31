@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useForm } from '@mantine/form'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { notifications } from '@mantine/notifications'
+import { useState } from "react";
+import { useForm } from "@mantine/form";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { notifications } from "@mantine/notifications";
 import {
   Container,
   Paper,
@@ -25,14 +25,12 @@ import {
   Progress,
   Modal,
   rem,
-} from '@mantine/core'
+} from "@mantine/core";
 import {
   IconUser,
   IconMail,
   IconPhone,
   IconLock,
-  IconEye,
-  IconEyeOff,
   IconStethoscope,
   IconUpload,
   IconFileText,
@@ -42,231 +40,232 @@ import {
   IconArrowLeft,
   IconCheck,
   IconX,
-} from '@tabler/icons-react'
-import { api } from '../services/api'
-import type { ProviderCreateRequest } from '../services/api'
+} from "@tabler/icons-react";
+import { api } from "../services/api";
+import type { ProviderCreateRequest } from "../services/api";
 
-export const Route = createFileRoute('/register')({
+export const Route = createFileRoute("/register")({
   component: Register,
-})
+});
 
 interface RegistrationForm {
   // Personal Information
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  profilePhoto: File | null
-  
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  profilePhoto: File | null;
+
   // Professional Information
-  licenseNumber: string
-  specialization: string
-  yearsExperience: number | ''
-  qualifications: string
-  
+  licenseNumber: string;
+  specialization: string;
+  yearsExperience: number | "";
+  qualifications: string;
+
   // Practice Information
-  practiceName: string
-  practiceType: string
-  streetAddress: string
-  city: string
-  state: string
-  zipCode: string
-  
+  practiceName: string;
+  practiceType: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zipCode: string;
+
   // Account Security
-  password: string
-  confirmPassword: string
-  termsAccepted: boolean
+  password: string;
+  confirmPassword: string;
+  termsAccepted: boolean;
 }
 
 const specializations = [
-  'Cardiology',
-  'Dermatology',
-  'Pediatrics',
-  'Neurology',
-  'Orthopedics',
-  'Psychiatry',
-  'Oncology',
-  'Emergency Medicine',
-  'Family Medicine',
-  'Internal Medicine',
-  'Obstetrics & Gynecology',
-  'Ophthalmology',
-  'Radiology',
-  'Surgery',
-  'Anesthesiology',
-  'Pathology',
-  'Urology',
-  'Endocrinology',
-  'Gastroenterology',
-  'Pulmonology',
-]
+  "Cardiology",
+  "Dermatology",
+  "Pediatrics",
+  "Neurology",
+  "Orthopedics",
+  "Psychiatry",
+  "Oncology",
+  "Emergency Medicine",
+  "Family Medicine",
+  "Internal Medicine",
+  "Obstetrics & Gynecology",
+  "Ophthalmology",
+  "Radiology",
+  "Surgery",
+  "Anesthesiology",
+  "Pathology",
+  "Urology",
+  "Endocrinology",
+  "Gastroenterology",
+  "Pulmonology",
+];
 
 const practiceTypes = [
-  'Private Practice',
-  'Hospital',
-  'Clinic',
-  'Medical Center',
-  'Urgent Care',
-  'Specialty Center',
-  'Academic Medical Center',
-  'Community Health Center',
-]
+  "Private Practice",
+  "Hospital",
+  "Clinic",
+  "Medical Center",
+  "Urgent Care",
+  "Specialty Center",
+  "Academic Medical Center",
+  "Community Health Center",
+];
 
 function Register() {
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [termsModalOpen, setTermsModalOpen] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState(0)
-  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const navigate = useNavigate();
 
   const form = useForm<RegistrationForm>({
     initialValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
       profilePhoto: null,
-      licenseNumber: '',
-      specialization: '',
-      yearsExperience: '',
-      qualifications: '',
-      practiceName: '',
-      practiceType: '',
-      streetAddress: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      password: '',
-      confirmPassword: '',
+      licenseNumber: "",
+      specialization: "",
+      yearsExperience: "",
+      qualifications: "",
+      practiceName: "",
+      practiceType: "",
+      streetAddress: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      password: "",
+      confirmPassword: "",
       termsAccepted: false,
     },
     validate: {
       firstName: (value) => {
-        if (!value) return 'First name is required'
-        if (value.length < 2) return 'First name must be at least 2 characters'
-        return null
+        if (!value) return "First name is required";
+        if (value.length < 2) return "First name must be at least 2 characters";
+        return null;
       },
       lastName: (value) => {
-        if (!value) return 'Last name is required'
-        if (value.length < 2) return 'Last name must be at least 2 characters'
-        return null
+        if (!value) return "Last name is required";
+        if (value.length < 2) return "Last name must be at least 2 characters";
+        return null;
       },
       email: (value) => {
-        if (!value) return 'Email is required'
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(value)) return 'Please enter a valid email address'
-        return null
+        if (!value) return "Email is required";
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value))
+          return "Please enter a valid email address";
+        return null;
       },
       phone: (value) => {
-        if (!value) return 'Phone number is required'
-        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/
-        if (!phoneRegex.test(value.replace(/[\s\-\(\)]/g, ''))) {
-          return 'Please enter a valid phone number'
+        if (!value) return "Phone number is required";
+        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+        if (!phoneRegex.test(value.replace(/[\s\-\(\)]/g, ""))) {
+          return "Please enter a valid phone number";
         }
-        return null
+        return null;
       },
       licenseNumber: (value) => {
-        if (!value) return 'Medical license number is required'
-        if (value.length < 5) return 'License number must be at least 5 characters'
-        return null
+        if (!value) return "Medical license number is required";
+        if (value.length < 5)
+          return "License number must be at least 5 characters";
+        return null;
       },
       specialization: (value) => {
-        if (!value) return 'Specialization is required'
-        return null
+        if (!value) return "Specialization is required";
+        return null;
       },
       yearsExperience: (value) => {
-        if (!value) return 'Years of experience is required'
-        if (value < 0 || value > 50) return 'Please enter a valid number of years'
-        return null
+        if (!value) return "Years of experience is required";
+        if (value < 0 || value > 50)
+          return "Please enter a valid number of years";
+        return null;
       },
       qualifications: (value) => {
-        if (!value) return 'Medical qualifications are required'
-        return null
+        if (!value) return "Medical qualifications are required";
+        return null;
       },
       practiceName: (value) => {
-        if (!value) return 'Practice name is required'
-        return null
+        if (!value) return "Practice name is required";
+        return null;
       },
       practiceType: (value) => {
-        if (!value) return 'Practice type is required'
-        return null
+        if (!value) return "Practice type is required";
+        return null;
       },
       streetAddress: (value) => {
-        if (!value) return 'Street address is required'
-        return null
+        if (!value) return "Street address is required";
+        return null;
       },
       city: (value) => {
-        if (!value) return 'City is required'
-        return null
+        if (!value) return "City is required";
+        return null;
       },
       state: (value) => {
-        if (!value) return 'State is required'
-        return null
+        if (!value) return "State is required";
+        return null;
       },
       zipCode: (value) => {
-        if (!value) return 'ZIP code is required'
-        const zipRegex = /^\d{5}(-\d{4})?$/
-        if (!zipRegex.test(value)) return 'Please enter a valid ZIP code'
-        return null
+        if (!value) return "ZIP code is required";
+        const zipRegex = /^\d{5}(-\d{4})?$/;
+        if (!zipRegex.test(value)) return "Please enter a valid ZIP code";
+        return null;
       },
       password: (value) => {
-        if (!value) return 'Password is required'
-        if (value.length < 8) return 'Password must be at least 8 characters'
-        
+        if (!value) return "Password is required";
+        if (value.length < 8) return "Password must be at least 8 characters";
+
         // Calculate password strength
-        let strength = 0
-        if (value.length >= 8) strength += 25
-        if (/[a-z]/.test(value)) strength += 25
-        if (/[A-Z]/.test(value)) strength += 25
-        if (/[0-9!@#$%^&*]/.test(value)) strength += 25
-        setPasswordStrength(strength)
-        
-        return null
+        let strength = 0;
+        if (value.length >= 8) strength += 25;
+        if (/[a-z]/.test(value)) strength += 25;
+        if (/[A-Z]/.test(value)) strength += 25;
+        if (/[0-9!@#$%^&*]/.test(value)) strength += 25;
+        setPasswordStrength(strength);
+
+        return null;
       },
       confirmPassword: (value, values) => {
-        if (!value) return 'Please confirm your password'
-        if (value !== values.password) return 'Passwords do not match'
-        return null
+        if (!value) return "Please confirm your password";
+        if (value !== values.password) return "Passwords do not match";
+        return null;
       },
       termsAccepted: (value) => {
-        if (!value) return 'You must accept the terms and conditions'
-        return null
+        if (!value) return "You must accept the terms and conditions";
+        return null;
       },
     },
-  })
+  });
 
   const handlePhotoUpload = (file: File | null) => {
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setPhotoPreview(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+        setPhotoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     } else {
-      setPhotoPreview(null)
+      setPhotoPreview(null);
     }
-    form.setFieldValue('profilePhoto', file)
-  }
+    form.setFieldValue("profilePhoto", file);
+  };
 
   const getPasswordStrengthColor = () => {
-    if (passwordStrength <= 25) return 'red'
-    if (passwordStrength <= 50) return 'orange'
-    if (passwordStrength <= 75) return 'yellow'
-    return 'green'
-  }
+    if (passwordStrength <= 25) return "red";
+    if (passwordStrength <= 50) return "orange";
+    if (passwordStrength <= 75) return "yellow";
+    return "green";
+  };
 
   const getPasswordStrengthText = () => {
-    if (passwordStrength <= 25) return 'Weak'
-    if (passwordStrength <= 50) return 'Fair'
-    if (passwordStrength <= 75) return 'Good'
-    return 'Strong'
-  }
+    if (passwordStrength <= 25) return "Weak";
+    if (passwordStrength <= 50) return "Fair";
+    if (passwordStrength <= 75) return "Good";
+    return "Strong";
+  };
 
   const handleSubmit = async (values: RegistrationForm) => {
-    setLoading(true)
-    
+    setLoading(true);
+
     try {
       // Prepare the data according to API schema
       const registrationData: ProviderCreateRequest = {
@@ -286,41 +285,44 @@ function Register() {
         license_document_url: "https://example.com/license.pdf", // TODO: Implement file upload
         password: values.password,
         confirm_password: values.confirmPassword,
-      }
+      };
 
-      const response = await api.provider.register(registrationData)
+      const response = await api.provider.register(registrationData);
 
       if (response.success) {
         notifications.show({
-          title: 'Registration Successful!',
-          message: 'Your account has been created successfully. You can now log in.',
-          color: 'green',
+          title: "Registration Successful!",
+          message:
+            "Your account has been created successfully. You can now log in.",
+          color: "green",
           icon: <IconCheck size={16} />,
-        })
-        
+        });
+
         // Redirect to login after a brief delay
         setTimeout(() => {
-          navigate({ to: '/login' })
-        }, 2000)
+          navigate({ to: "/login" });
+        }, 2000);
       } else {
-        throw new Error(response.error || 'Registration failed')
+        throw new Error(response.error || "Registration failed");
       }
-      
     } catch (error) {
       notifications.show({
-        title: 'Registration Failed',
-        message: error instanceof Error ? error.message : 'An error occurred during registration. Please try again.',
-        color: 'red',
+        title: "Registration Failed",
+        message:
+          error instanceof Error
+            ? error.message
+            : "An error occurred during registration. Please try again.",
+        color: "red",
         icon: <IconX size={16} />,
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleBackToLogin = () => {
-    navigate({ to: '/login' })
-  }
+    navigate({ to: "/login" });
+  };
 
   return (
     <Container size="lg" py="xl">
@@ -329,8 +331,8 @@ function Register() {
         p="xl"
         radius="md"
         style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-          border: '1px solid #e2e8f0',
+          background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+          border: "1px solid #e2e8f0",
         }}
       >
         {/* Header */}
@@ -340,11 +342,11 @@ function Register() {
               style={{
                 width: rem(60),
                 height: rem(60),
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: rem(8),
               }}
             >
@@ -374,7 +376,6 @@ function Register() {
         {/* Registration Form */}
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="xl">
-            
             {/* Personal Information Section */}
             <Box>
               <Title order={3} size="h4" mb="md" c="#1e293b">
@@ -387,7 +388,7 @@ function Register() {
                     placeholder="Enter your first name"
                     leftSection={<IconUser size={16} />}
                     required
-                    {...form.getInputProps('firstName')}
+                    {...form.getInputProps("firstName")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -396,7 +397,7 @@ function Register() {
                     placeholder="Enter your last name"
                     leftSection={<IconUser size={16} />}
                     required
-                    {...form.getInputProps('lastName')}
+                    {...form.getInputProps("lastName")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -405,7 +406,7 @@ function Register() {
                     placeholder="Enter your email address"
                     leftSection={<IconMail size={16} />}
                     required
-                    {...form.getInputProps('email')}
+                    {...form.getInputProps("email")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -414,7 +415,7 @@ function Register() {
                     placeholder="Enter your phone number"
                     leftSection={<IconPhone size={16} />}
                     required
-                    {...form.getInputProps('phone')}
+                    {...form.getInputProps("phone")}
                   />
                 </Grid.Col>
                 <Grid.Col span={12}>
@@ -427,17 +428,17 @@ function Register() {
                     value={form.values.profilePhoto}
                     styles={{
                       input: {
-                        borderColor: '#e2e8f0',
+                        borderColor: "#e2e8f0",
                       },
                     }}
                   />
                   {photoPreview && (
-                    <Box mt="sm" style={{ textAlign: 'center' }}>
+                    <Box mt="sm" style={{ textAlign: "center" }}>
                       <Avatar
                         src={photoPreview}
                         size="xl"
                         radius="xl"
-                        style={{ margin: '0 auto' }}
+                        style={{ margin: "0 auto" }}
                       />
                     </Box>
                   )}
@@ -459,7 +460,7 @@ function Register() {
                     placeholder="Enter your license number"
                     leftSection={<IconCertificate size={16} />}
                     required
-                    {...form.getInputProps('licenseNumber')}
+                    {...form.getInputProps("licenseNumber")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -470,7 +471,7 @@ function Register() {
                     data={specializations}
                     searchable
                     required
-                    {...form.getInputProps('specialization')}
+                    {...form.getInputProps("specialization")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -481,7 +482,7 @@ function Register() {
                     min={0}
                     max={50}
                     required
-                    {...form.getInputProps('yearsExperience')}
+                    {...form.getInputProps("yearsExperience")}
                   />
                 </Grid.Col>
                 <Grid.Col span={12}>
@@ -491,7 +492,7 @@ function Register() {
                     leftSection={<IconFileText size={16} />}
                     rows={3}
                     required
-                    {...form.getInputProps('qualifications')}
+                    {...form.getInputProps("qualifications")}
                   />
                 </Grid.Col>
               </Grid>
@@ -511,7 +512,7 @@ function Register() {
                     placeholder="Enter practice/hospital name"
                     leftSection={<IconBuilding size={16} />}
                     required
-                    {...form.getInputProps('practiceName')}
+                    {...form.getInputProps("practiceName")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6 }}>
@@ -521,7 +522,7 @@ function Register() {
                     leftSection={<IconBuilding size={16} />}
                     data={practiceTypes}
                     required
-                    {...form.getInputProps('practiceType')}
+                    {...form.getInputProps("practiceType")}
                   />
                 </Grid.Col>
                 <Grid.Col span={12}>
@@ -530,7 +531,7 @@ function Register() {
                     placeholder="Enter street address"
                     leftSection={<IconMapPin size={16} />}
                     required
-                    {...form.getInputProps('streetAddress')}
+                    {...form.getInputProps("streetAddress")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 4 }}>
@@ -538,7 +539,7 @@ function Register() {
                     label="City"
                     placeholder="Enter city"
                     required
-                    {...form.getInputProps('city')}
+                    {...form.getInputProps("city")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 4 }}>
@@ -546,7 +547,7 @@ function Register() {
                     label="State"
                     placeholder="Enter state"
                     required
-                    {...form.getInputProps('state')}
+                    {...form.getInputProps("state")}
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 4 }}>
@@ -554,7 +555,7 @@ function Register() {
                     label="ZIP Code"
                     placeholder="Enter ZIP code"
                     required
-                    {...form.getInputProps('zipCode')}
+                    {...form.getInputProps("zipCode")}
                   />
                 </Grid.Col>
               </Grid>
@@ -573,22 +574,8 @@ function Register() {
                     label="Password"
                     placeholder="Create a strong password"
                     leftSection={<IconLock size={16} />}
-                    rightSection={
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: '#6b7280',
-                        }}
-                      >
-                        {showPassword ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-                      </button>
-                    }
                     required
-                    {...form.getInputProps('password')}
+                    {...form.getInputProps("password")}
                   />
                   {form.values.password && (
                     <Box mt="xs">
@@ -608,41 +595,29 @@ function Register() {
                     label="Confirm Password"
                     placeholder="Confirm your password"
                     leftSection={<IconLock size={16} />}
-                    rightSection={
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: '#6b7280',
-                        }}
-                      >
-                        {showConfirmPassword ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-                      </button>
-                    }
                     required
-                    {...form.getInputProps('confirmPassword')}
+                    {...form.getInputProps("confirmPassword")}
                   />
                 </Grid.Col>
                 <Grid.Col span={12}>
                   <Checkbox
                     label={
                       <Text size="sm">
-                        I accept the{' '}
+                        I accept the{" "}
                         <Button
                           variant="subtle"
                           size="xs"
                           p={0}
                           onClick={() => setTermsModalOpen(true)}
-                          style={{ color: '#2563eb' }}
+                          style={{ color: "#2563eb" }}
                         >
                           Terms and Conditions
                         </Button>
                       </Text>
                     }
-                    {...form.getInputProps('termsAccepted', { type: 'checkbox' })}
+                    {...form.getInputProps("termsAccepted", {
+                      type: "checkbox",
+                    })}
                   />
                 </Grid.Col>
               </Grid>
@@ -655,15 +630,15 @@ function Register() {
               fullWidth
               size="lg"
               style={{
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                border: 'none',
-                borderRadius: '8px',
+                background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                border: "none",
+                borderRadius: "8px",
                 fontWeight: 600,
                 height: rem(56),
-                fontSize: '18px',
+                fontSize: "18px",
               }}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </Stack>
         </form>
@@ -678,27 +653,32 @@ function Register() {
       >
         <Stack gap="md">
           <Text size="sm">
-            By registering as a healthcare provider, you agree to the following terms and conditions:
+            By registering as a healthcare provider, you agree to the following
+            terms and conditions:
           </Text>
           <Text size="sm">
-            1. You certify that all information provided is accurate and truthful.
+            1. You certify that all information provided is accurate and
+            truthful.
           </Text>
           <Text size="sm">
             2. You agree to maintain the confidentiality of patient information.
           </Text>
           <Text size="sm">
-            3. You will comply with all applicable healthcare regulations and standards.
+            3. You will comply with all applicable healthcare regulations and
+            standards.
           </Text>
           <Text size="sm">
-            4. You understand that your account may be subject to verification and approval.
+            4. You understand that your account may be subject to verification
+            and approval.
           </Text>
           <Text size="sm">
-            5. You agree to receive communications related to your account and the platform.
+            5. You agree to receive communications related to your account and
+            the platform.
           </Text>
           <Button
             onClick={() => setTermsModalOpen(false)}
             style={{
-              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+              background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
             }}
           >
             I Understand
@@ -706,5 +686,5 @@ function Register() {
         </Stack>
       </Modal>
     </Container>
-  )
-} 
+  );
+}

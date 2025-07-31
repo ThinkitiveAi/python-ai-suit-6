@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Container, Title, Text, Button, Stack, Paper, Group, Box } from '@mantine/core'
-import { IconLogout, IconHeart, IconUser } from '@tabler/icons-react'
+import { IconLogout, IconHeart } from '@tabler/icons-react'
 import { api } from '../services/api'
 
 export const Route = createFileRoute('/patient-dashboard')({

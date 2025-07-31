@@ -8,6 +8,14 @@ import {
   IconLogout, IconHeart, IconUser, IconSearch, IconBell, IconMessageCircle, IconDotsVertical, IconPlus, IconEye, IconEdit, IconTrash, IconPhone, IconMail, IconCalendar, IconDashboard, IconUsers, IconFileText, IconSettings, IconClock, IconChevronLeft, IconChevronRight, IconCalendarTime, IconStethoscope, IconCheck, IconX, IconAlertTriangle, IconInfoCircle, IconDownload, IconUpload, IconRefresh, IconFilter, IconCalendarEvent, IconCalendarStats,
 } from '@tabler/icons-react'
 import { api } from '../services/api'
+import type { 
+  ProviderAvailabilityCreate, 
+  ProviderAvailabilityUpdate, 
+  ProviderAvailabilityParams,
+  AvailabilityStatus,
+  AppointmentType,
+  LocationType
+} from '../services/api'
 
 export const Route = createFileRoute('/dashboard')({
   component: Dashboard,
@@ -230,13 +238,26 @@ function Dashboard() {
     setEditModalOpen(true)
   }
 
-  const handleDeleteSlot = (slotId: string) => {
-    setTimeSlots(prev => prev.filter(slot => slot.id !== slotId))
-    notifications.show({
-      title: 'Time Slot Deleted',
-      message: 'The time slot has been successfully deleted.',
-      color: 'green',
-    })
+  const handleDeleteSlot = async (slotId: string) => {
+    try {
+      const response = await api.provider.availability.delete(slotId)
+      if (response.success) {
+        setTimeSlots(prev => prev.filter(slot => slot.id !== slotId))
+        notifications.show({
+          title: 'Time Slot Deleted',
+          message: 'The time slot has been successfully deleted.',
+          color: 'green',
+        })
+      } else {
+        throw new Error(response.error || 'Failed to delete slot')
+      }
+    } catch (error) {
+      notifications.show({
+        title: 'Delete Failed',
+        message: error instanceof Error ? error.message : 'Failed to delete time slot.',
+        color: 'red',
+      })
+    }
   }
 
   const handleBulkAction = (action: string) => {
@@ -277,6 +298,50 @@ function Dashboard() {
   const goToToday = () => {
     setCurrentDate(new Date())
   }
+
+  // Load provider availability data
+  useEffect(() => {
+    const loadAvailability = async () => {
+      try {
+        const providerUser = localStorage.getItem('providerUser')
+        if (providerUser) {
+          const user = JSON.parse(providerUser)
+          const providerId = user.id || user.provider_id
+          
+          if (providerId) {
+            const startDate = new Date(currentDate)
+            startDate.setDate(startDate.getDate() - 7)
+            const endDate = new Date(currentDate)
+            endDate.setDate(endDate.getDate() + 30)
+
+            const params: ProviderAvailabilityParams = {
+              start_date: startDate.toISOString().split('T')[0],
+              end_date: endDate.toISOString().split('T')[0],
+            }
+
+            const response = await api.provider.availability.get(providerId, params)
+            if (response.success && response.data) {
+              // Transform API data to match our local format
+              const apiSlots = response.data.map((slot: any) => ({
+                id: slot.id,
+                date: slot.date,
+                time: slot.start_time,
+                status: slot.status as AvailabilityStatus,
+                duration: slot.slot_duration || 30,
+                appointmentType: slot.appointment_type,
+                notes: slot.notes,
+              }))
+              setTimeSlots(apiSlots)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load availability:', error)
+      }
+    }
+
+    loadAvailability()
+  }, [currentDate])
 
   const renderSchedulingContent = () => (
     <Stack gap="lg">
@@ -703,6 +768,7 @@ function Dashboard() {
                       label="Date"
                       type="date"
                       defaultValue={new Date().toISOString().split('T')[0]}
+                      id="availability-date"
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
@@ -710,6 +776,7 @@ function Dashboard() {
                       label="Time"
                       placeholder="Select time"
                       data={timeSlotOptions}
+                      id="availability-time"
                     />
                   </Grid.Col>
                 </Grid>
@@ -721,6 +788,7 @@ function Dashboard() {
                       placeholder="Select duration"
                       data={durationOptions}
                       defaultValue="30"
+                      id="availability-duration"
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
@@ -728,6 +796,7 @@ function Dashboard() {
                       label="Appointment Type"
                       placeholder="Select type"
                       data={appointmentTypes}
+                      id="availability-appointment-type"
                     />
                   </Grid.Col>
                 </Grid>
@@ -735,6 +804,7 @@ function Dashboard() {
                 <TextInput
                   label="Notes"
                   placeholder="Optional notes..."
+                  id="availability-notes"
                 />
               </Stack>
             </Tabs.Panel>
@@ -747,6 +817,7 @@ function Dashboard() {
                       label="Start Date"
                       type="date"
                       defaultValue={new Date().toISOString().split('T')[0]}
+                      id="recurring-start-date"
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
@@ -754,6 +825,7 @@ function Dashboard() {
                       label="End Date"
                       type="date"
                       defaultValue={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                      id="recurring-end-date"
                     />
                   </Grid.Col>
                 </Grid>
@@ -771,6 +843,7 @@ function Dashboard() {
                     { value: '0', label: 'Sunday' },
                   ]}
                   multiple
+                  id="recurring-days"
                 />
                 
                 <Grid>
@@ -779,6 +852,7 @@ function Dashboard() {
                       label="Start Time"
                       placeholder="Select time"
                       data={timeSlotOptions}
+                      id="recurring-start-time"
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
@@ -786,6 +860,7 @@ function Dashboard() {
                       label="End Time"
                       placeholder="Select time"
                       data={timeSlotOptions}
+                      id="recurring-end-time"
                     />
                   </Grid.Col>
                 </Grid>
@@ -795,12 +870,14 @@ function Dashboard() {
                   placeholder="Select duration"
                   data={durationOptions}
                   defaultValue="30"
+                  id="recurring-duration"
                 />
                 
                 <Select
                   label="Appointment Type"
                   placeholder="Select type"
                   data={appointmentTypes}
+                  id="recurring-appointment-type"
                 />
               </Stack>
             </Tabs.Panel>
@@ -819,6 +896,7 @@ function Dashboard() {
                       label="Start Date"
                       type="date"
                       defaultValue={new Date().toISOString().split('T')[0]}
+                      id="batch-start-date"
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
@@ -826,6 +904,7 @@ function Dashboard() {
                       label="End Date"
                       type="date"
                       defaultValue={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                      id="batch-end-date"
                     />
                   </Grid.Col>
                 </Grid>
@@ -835,6 +914,7 @@ function Dashboard() {
                   placeholder="Select time slots"
                   data={timeSlotOptions}
                   multiple
+                  id="batch-time-range"
                 />
                 
                 <Select
@@ -842,12 +922,14 @@ function Dashboard() {
                   placeholder="Select duration"
                   data={durationOptions}
                   defaultValue="30"
+                  id="batch-duration"
                 />
                 
                 <Select
                   label="Appointment Type"
                   placeholder="Select type"
                   data={appointmentTypes}
+                  id="batch-appointment-type"
                 />
               </Stack>
             </Tabs.Panel>
@@ -858,13 +940,80 @@ function Dashboard() {
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                setAddModalOpen(false)
-                notifications.show({
-                  title: 'Availability Added',
-                  message: 'New availability slots have been added successfully.',
-                  color: 'green',
-                })
+              onClick={async () => {
+                try {
+                  const providerUser = localStorage.getItem('providerUser')
+                  if (!providerUser) {
+                    throw new Error('Provider not authenticated')
+                  }
+
+                  const user = JSON.parse(providerUser)
+                  const providerId = user.id || user.provider_id
+
+                  // Get form values (simplified for demo)
+                  const dateInput = document.getElementById('availability-date') as HTMLInputElement
+                  const timeInput = document.getElementById('availability-time') as HTMLSelectElement
+                  const durationInput = document.getElementById('availability-duration') as HTMLSelectElement
+                  const appointmentTypeInput = document.getElementById('availability-appointment-type') as HTMLSelectElement
+                  const notesInput = document.getElementById('availability-notes') as HTMLInputElement
+
+                  if (!dateInput?.value || !timeInput?.value) {
+                    throw new Error('Please fill in required fields')
+                  }
+
+                  const startTime = timeInput.value
+                  const endTime = new Date(`2000-01-01T${startTime}`)
+                  endTime.setMinutes(endTime.getMinutes() + parseInt(durationInput?.value || '30'))
+                  const endTimeStr = endTime.toTimeString().slice(0, 5)
+
+                  const availabilityData: ProviderAvailabilityCreate = {
+                    provider_id: providerId,
+                    date: dateInput.value,
+                    start_time: startTime,
+                    end_time: endTimeStr,
+                    timezone: 'America/New_York',
+                    is_recurring: false,
+                    slot_duration: parseInt(durationInput?.value || '30'),
+                    status: 'available',
+                    appointment_type: (appointmentTypeInput?.value as AppointmentType) || 'consultation',
+                    location: {
+                      type: 'clinic' as LocationType,
+                    },
+                    notes: notesInput?.value || null,
+                  }
+
+                  const response = await api.provider.availability.create(availabilityData)
+                  
+                  if (response.success) {
+                    setAddModalOpen(false)
+                    notifications.show({
+                      title: 'Availability Added',
+                      message: 'New availability slots have been added successfully.',
+                      color: 'green',
+                    })
+                    
+                    // Refresh the availability data
+                    const currentSlots = [...timeSlots]
+                    const newSlot = {
+                      id: response.data?.id || `slot-${Date.now()}`,
+                      date: dateInput.value,
+                      time: startTime,
+                      status: 'available' as AvailabilityStatus,
+                      duration: parseInt(durationInput?.value || '30'),
+                      appointmentType: appointmentTypeInput?.value,
+                      notes: notesInput?.value,
+                    }
+                    setTimeSlots([...currentSlots, newSlot])
+                  } else {
+                    throw new Error(response.error || 'Failed to add availability')
+                  }
+                } catch (error) {
+                  notifications.show({
+                    title: 'Add Failed',
+                    message: error instanceof Error ? error.message : 'Failed to add availability slot.',
+                    color: 'red',
+                  })
+                }
               }}
             >
               Add Slots
@@ -911,27 +1060,31 @@ function Dashboard() {
                 { value: 'available', label: 'Available' },
                 { value: 'booked', label: 'Booked' },
                 { value: 'blocked', label: 'Blocked' },
-                { value: 'tentative', label: 'Tentative' },
-                { value: 'break', label: 'Break' },
+                { value: 'cancelled', label: 'Cancelled' },
+                { value: 'maintenance', label: 'Maintenance' },
               ]}
+              id="edit-status"
             />
             
             <Select
               label="Appointment Type"
               value={selectedSlot.appointmentType}
               data={appointmentTypes}
+              id="edit-appointment-type"
             />
             
             <Select
               label="Duration"
               value={selectedSlot.duration.toString()}
               data={durationOptions}
+              id="edit-duration"
             />
             
             <TextInput
               label="Notes"
               value={selectedSlot.notes || ''}
               placeholder="Add notes..."
+              id="edit-notes"
             />
             
             <Group justify="flex-end" mt="md">
@@ -949,13 +1102,50 @@ function Dashboard() {
                 Cancel
               </Button>
               <Button
-                onClick={() => {
-                  setEditModalOpen(false)
-                  notifications.show({
-                    title: 'Slot Updated',
-                    message: 'Time slot has been updated successfully.',
-                    color: 'green',
-                  })
+                onClick={async () => {
+                  try {
+                    const statusInput = document.getElementById('edit-status') as HTMLSelectElement
+                    const appointmentTypeInput = document.getElementById('edit-appointment-type') as HTMLSelectElement
+                    const durationInput = document.getElementById('edit-duration') as HTMLSelectElement
+                    const notesInput = document.getElementById('edit-notes') as HTMLInputElement
+
+                    const updateData: ProviderAvailabilityUpdate = {
+                      status: (statusInput?.value as AvailabilityStatus) || selectedSlot.status,
+                      notes: notesInput?.value || null,
+                    }
+
+                    const response = await api.provider.availability.update(selectedSlot.id, updateData)
+                    
+                    if (response.success) {
+                      // Update local state
+                      setTimeSlots(prev => prev.map(slot => 
+                        slot.id === selectedSlot.id 
+                          ? {
+                              ...slot,
+                              status: (statusInput?.value as AvailabilityStatus) || slot.status,
+                              appointmentType: appointmentTypeInput?.value || slot.appointmentType,
+                              duration: parseInt(durationInput?.value || slot.duration.toString()),
+                              notes: notesInput?.value || slot.notes,
+                            }
+                          : slot
+                      ))
+                      
+                      setEditModalOpen(false)
+                      notifications.show({
+                        title: 'Slot Updated',
+                        message: 'Time slot has been updated successfully.',
+                        color: 'green',
+                      })
+                    } else {
+                      throw new Error(response.error || 'Failed to update slot')
+                    }
+                  } catch (error) {
+                    notifications.show({
+                      title: 'Update Failed',
+                      message: error instanceof Error ? error.message : 'Failed to update time slot.',
+                      color: 'red',
+                    })
+                  }
                 }}
               >
                 Save Changes

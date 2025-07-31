@@ -3,10 +3,10 @@ import { useForm } from '@mantine/form'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { notifications } from '@mantine/notifications'
 import {
-  Container, Paper, Title, Text, TextInput, PasswordInput, Checkbox, Button, Group, Stack, Divider, Box, Center, Flex, rem, Alert, Badge,
+  Container, Paper, Title, Text, TextInput, PasswordInput, Checkbox, Button, Group, Stack, Divider, Box, Center, rem, Badge,
 } from '@mantine/core'
 import {
-  IconUser, IconLock, IconEye, IconEyeOff, IconHeart, IconMail, IconPhone, IconInfoCircle, IconShield, IconArrowRight, IconCheck, IconX, IconStethoscope, IconArrowLeft, IconUsers, IconUserCircle,
+  IconUser, IconLock, IconArrowRight, IconCheck, IconX, IconStethoscope, IconUsers, IconUserCircle,
 } from '@tabler/icons-react'
 import { api } from '../services/api'
 import type { ProviderLoginRequest } from '../services/api'
@@ -23,7 +23,6 @@ interface LoginForm {
 
 function Login() {
   const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
   // Check if user is already authenticated
@@ -235,20 +234,6 @@ function Login() {
               label="Password"
               placeholder="Enter your password"
               leftSection={<IconLock size={16} />}
-              rightSection={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#6b7280',
-                  }}
-                >
-                  {showPassword ? <IconEyeOff size={16} /> : <IconEye size={16} />}
-                </button>
-              }
               required
               {...form.getInputProps('password')}
               styles={{

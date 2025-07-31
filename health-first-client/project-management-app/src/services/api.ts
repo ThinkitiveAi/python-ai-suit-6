@@ -26,6 +26,31 @@ export interface InsuranceInfo {
   policy_number?: string | null
 }
 
+// Availability Types
+export type AppointmentType = 'consultation' | 'follow_up' | 'emergency' | 'telemedicine'
+export type AvailabilityStatus = 'available' | 'booked' | 'cancelled' | 'blocked' | 'maintenance'
+export type LocationType = 'clinic' | 'hospital' | 'telemedicine' | 'home_visit'
+export type RecurrencePattern = 'daily' | 'weekly' | 'monthly'
+
+export interface Location {
+  type: LocationType
+  address?: string | null
+  room_number?: string | null
+}
+
+export interface Pricing {
+  base_fee: number
+  insurance_accepted?: boolean
+  currency?: string
+}
+
+export interface RecurrencePattern {
+  pattern: RecurrencePattern
+  interval?: number
+  days_of_week?: number[]
+  day_of_month?: number
+}
+
 // Provider Types
 export interface ProviderCreateRequest {
   first_name: string
@@ -44,6 +69,56 @@ export interface ProviderCreateRequest {
 export interface ProviderLoginRequest {
   email: string
   password: string
+}
+
+export interface ProviderAvailabilityCreate {
+  provider_id: string
+  date: string
+  start_time: string
+  end_time: string
+  timezone?: string
+  is_recurring?: boolean
+  recurrence_pattern?: RecurrencePattern | null
+  recurrence_end_date?: string | null
+  slot_duration?: number
+  break_duration?: number
+  status?: AvailabilityStatus
+  max_appointments_per_slot?: number
+  appointment_type?: AppointmentType
+  location: Location
+  pricing?: Pricing | null
+  notes?: string | null
+  special_requirements?: string[]
+}
+
+export interface ProviderAvailabilityUpdate {
+  start_time?: string | null
+  end_time?: string | null
+  status?: AvailabilityStatus | null
+  notes?: string | null
+  pricing?: Pricing | null
+  special_requirements?: string[] | null
+}
+
+export interface AvailabilitySearchParams {
+  date?: string | null
+  start_date?: string | null
+  end_date?: string | null
+  specialization?: string | null
+  location?: string | null
+  appointment_type?: string | null
+  insurance_accepted?: boolean | null
+  max_price?: number | null
+  timezone?: string | null
+  available_only?: boolean
+}
+
+export interface ProviderAvailabilityParams {
+  start_date?: string | null
+  end_date?: string | null
+  status?: string | null
+  appointment_type?: string | null
+  timezone?: string | null
 }
 
 // Patient Types
@@ -176,6 +251,71 @@ class ApiService {
     })
   }
 
+  // Provider Availability Endpoints
+  async createAvailability(availabilityData: ProviderAvailabilityCreate): Promise<ApiResponse> {
+    return this.makeRequest('/provider/availability', {
+      method: 'POST',
+      body: JSON.stringify(availabilityData),
+    })
+  }
+
+  async getProviderAvailability(providerId: string, params?: ProviderAvailabilityParams): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams()
+    if (params?.start_date) queryParams.append('start_date', params.start_date)
+    if (params?.end_date) queryParams.append('end_date', params.end_date)
+    if (params?.status) queryParams.append('status', params.status)
+    if (params?.appointment_type) queryParams.append('appointment_type', params.appointment_type)
+    if (params?.timezone) queryParams.append('timezone', params.timezone)
+
+    const queryString = queryParams.toString()
+    const url = `/provider/${providerId}/availability${queryString ? `?${queryString}` : ''}`
+    
+    return this.makeRequest(url, {
+      method: 'GET',
+    })
+  }
+
+  async updateAvailabilitySlot(slotId: string, updateData: ProviderAvailabilityUpdate): Promise<ApiResponse> {
+    return this.makeRequest(`/provider/availability/${slotId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    })
+  }
+
+  async deleteAvailabilitySlot(slotId: string, deleteRecurring?: boolean, reason?: string): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams()
+    if (deleteRecurring !== undefined) queryParams.append('delete_recurring', deleteRecurring.toString())
+    if (reason) queryParams.append('reason', reason)
+
+    const queryString = queryParams.toString()
+    const url = `/provider/availability/${slotId}${queryString ? `?${queryString}` : ''}`
+    
+    return this.makeRequest(url, {
+      method: 'DELETE',
+    })
+  }
+
+  async searchAvailability(params?: AvailabilitySearchParams): Promise<ApiResponse> {
+    const queryParams = new URLSearchParams()
+    if (params?.date) queryParams.append('date', params.date)
+    if (params?.start_date) queryParams.append('start_date', params.start_date)
+    if (params?.end_date) queryParams.append('end_date', params.end_date)
+    if (params?.specialization) queryParams.append('specialization', params.specialization)
+    if (params?.location) queryParams.append('location', params.location)
+    if (params?.appointment_type) queryParams.append('appointment_type', params.appointment_type)
+    if (params?.insurance_accepted !== undefined) queryParams.append('insurance_accepted', params.insurance_accepted.toString())
+    if (params?.max_price) queryParams.append('max_price', params.max_price.toString())
+    if (params?.timezone) queryParams.append('timezone', params.timezone)
+    if (params?.available_only !== undefined) queryParams.append('available_only', params.available_only.toString())
+
+    const queryString = queryParams.toString()
+    const url = `/provider/availability/search${queryString ? `?${queryString}` : ''}`
+    
+    return this.makeRequest(url, {
+      method: 'GET',
+    })
+  }
+
   // Patient Endpoints
   async registerPatient(patientData: PatientCreateRequest): Promise<ApiResponse> {
     return this.makeRequest('/patient/register', {
@@ -222,6 +362,13 @@ export const api = {
     logout: (refreshToken: string) => apiService.logoutProvider(refreshToken),
     logoutAll: (password: string) => apiService.logoutAllProvider(password),
     refresh: (refreshToken: string) => apiService.refreshProviderToken(refreshToken),
+    availability: {
+      create: (data: ProviderAvailabilityCreate) => apiService.createAvailability(data),
+      get: (providerId: string, params?: ProviderAvailabilityParams) => apiService.getProviderAvailability(providerId, params),
+      update: (slotId: string, data: ProviderAvailabilityUpdate) => apiService.updateAvailabilitySlot(slotId, data),
+      delete: (slotId: string, deleteRecurring?: boolean, reason?: string) => apiService.deleteAvailabilitySlot(slotId, deleteRecurring, reason),
+      search: (params?: AvailabilitySearchParams) => apiService.searchAvailability(params),
+    },
   },
   patient: {
     register: (data: PatientCreateRequest) => apiService.registerPatient(data),

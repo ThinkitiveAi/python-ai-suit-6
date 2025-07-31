@@ -16,29 +16,20 @@ import {
   Divider,
   Box,
   Center,
-  Flex,
   rem,
   Alert,
   Badge,
-  ActionIcon,
 } from '@mantine/core'
 import {
   IconUser,
   IconLock,
-  IconEye,
-  IconEyeOff,
   IconHeart,
   IconMail,
-  IconPhone,
-  IconInfoCircle,
   IconShield,
   IconArrowRight,
   IconCheck,
   IconX,
   IconStethoscope,
-  IconArrowLeft,
-  IconUsers,
-  IconUserCircle,
   IconSparkles,
 } from '@tabler/icons-react'
 import { api } from '../services/api'
@@ -56,7 +47,6 @@ interface PatientLoginForm {
 
 function PatientLogin() {
   const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
   // Check if user is already authenticated
@@ -315,9 +305,6 @@ function PatientLogin() {
                   fontSize: '14px',
                   marginBottom: rem(8),
                 },
-                leftSection: {
-                  color: '#6b7280',
-                },
               }}
             />
 
@@ -325,25 +312,6 @@ function PatientLogin() {
               label="Password"
               placeholder="Enter your password"
               leftSection={<IconLock size={18} />}
-              rightSection={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#6b7280',
-                    padding: '8px',
-                    borderRadius: '4px',
-                    '&:hover': {
-                      backgroundColor: '#f3f4f6',
-                    },
-                  }}
-                >
-                  {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
-                </button>
-              }
               required
               size="lg"
               {...form.getInputProps('password')}
@@ -363,12 +331,6 @@ function PatientLogin() {
                   fontWeight: 500,
                   fontSize: '14px',
                   marginBottom: rem(8),
-                },
-                leftSection: {
-                  color: '#6b7280',
-                },
-                rightSection: {
-                  color: '#6b7280',
                 },
               }}
             />
